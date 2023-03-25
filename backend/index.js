@@ -1,14 +1,15 @@
 const { Configuration, OpenAIApi } = require("openai");
+const serverless = require("serverless-http");
 const express = require('express');
 const cors = require('cors');
 const app = express();
 
-// let corsOptions = {
-//     origin: 'https://localhost:8080',
-//     credentials: true
-// }
+let corsOptions = {
+    origin: 'https://openai-sample.pages.dev',
+    credentials: true
+}
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
@@ -39,17 +40,29 @@ app.post('/fortuneTell', async function (req, res) {
         }
     }
     
-    const completion = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
-        max_tokens: 2048,
-        messages: messages
-    });
+    const maxRetries = 3;
+    let retries = 0;
+    let completion
+    while (retries < maxRetries) {
+      try {
+        completion = await openai.createChatCompletion({
+          model: "gpt-3.5-turbo",
+          max_tokens: 2048,
+          messages: messages
+        });
+        break;
+      } catch (error) {
+          retries++;
+          console.log(error);
+          console.log(`Error fetching data, retrying (${retries}/${maxRetries})...`);
+      }
+    }
 
     let fortuneContent = completion.data.choices[0].message.content;
     res.json({"assistant": fortuneContent});
 })
 
-app.listen(3000)
+module.exports.handler = serverless(app);
 
 
 

@@ -39,10 +39,10 @@ const sendMessage = async (message) => {
         chatInput.value = '';
     }
 
-    const response = await fetch('http://localhost:3000/fortuneTell', {
+    const response = await fetch('https://mpkcmtsotbtwjraspnmru7wrqm0hagkr.lambda-url.us-east-1.on.aws/fortuneTell', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({
             myDateTime: myDateTime,
@@ -74,7 +74,7 @@ document.querySelector('.voice').addEventListener('click', () => {
         // set recognition parameters
         recognition.lang = 'ko';
         recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
+        recognition.maxAlternatives = 10000;
     
         // when speech is recognized, do something with it
         recognition.onresult = event => {
